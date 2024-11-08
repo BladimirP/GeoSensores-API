@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # Mapea el puerto del host al contenedor
+    env_file:
+      - .env # Variables de entorno para la API
+    depends_on:
+      - mongodb # Asegura que MongoDB esté funcionando antes de iniciar la API
+    volumes:
+      - ./app/logs:/app/logs # Mapea los logs al host
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./database/GeoSensores:/dump
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
