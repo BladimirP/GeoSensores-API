@@ -35,7 +35,7 @@ router = APIRouter()
 
 def serialize_mongo_document(document):
     if document:
-        document["_id"] = str(document["_id"])  # Convertir `_id` a string
+        document["_id"] = str(document["_id"])
     return document
 
 # Ruta para autenticación
@@ -60,8 +60,7 @@ async def login(auth: schemas.Auth, request: Request):
         
         # Loggear el login exitoso
         logger.info(f"../auth, FROM: {request.client.host}, DETAIL: Successful login for {auth.email}")
-
-        return {"status": "success", "content": serialize_mongo_document(user)}
+        return serialize_mongo_document(user)
         
     except HTTPException as e:
         logger.error(f"../auth, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -76,12 +75,10 @@ async def create_user(user: schemas.User, request: Request):
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already exists")
         
-        new_user = user.dict()
-        result = await users_collection.insert_one(new_user)
-        
+        result = await users_collection.insert_one(user.dict())
         logger.info(f"../register, FROM: {request.client.host}, STATUS: 200, DETAIL: Successful login for {result.inserted_id}")
 
-        return {"status": "success", "content": str(result.inserted_id)}
+        return str(result.inserted_id)
     
     except HTTPException as e:
         logger.error(f"../register, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -99,14 +96,11 @@ async def get_collections(request: Request):
         logger.info(f"../resources, FROM: {request.client.host}, STATUS: 200")
 
         return {
-            "status": "success",
-            "content": {
                 "beacons": beacons,
                 "infoCards": infocards,
                 "trees": trees,
                 "treeCards": treecards
             }
-        }
     
     except HTTPException as e:
         logger.error(f"../resources, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -119,7 +113,7 @@ async def insert_log_hito(log: schemas.LogHito, request: Request):
 
         logger.info(f"../log_hito, FROM: {request.client.host}, STATUS: 200, DETAIL: {result.inserted_id}")
 
-        return {"status": "success", "content": str(result.inserted_id)}
+        return str(result.inserted_id)
     
     except HTTPException as e:
         logger.error(f"../log_hito, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -132,7 +126,7 @@ async def insert_log_priximidad(log: schemas.LogProximidad, request: Request):
 
         logger.info(f"../log_proximidad, FROM: {request.client.host}, STATUS: 200, DETAIL: {result.inserted_id}")
 
-        return {"status": "success", "content": str(result.inserted_id)}
+        return str(result.inserted_id)
     
     except HTTPException as e:
         logger.error(f"../log_proximidad, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -145,7 +139,7 @@ async def get_all_beacons(request: Request):
     try:
         beacons = [serialize_mongo_document(doc) for doc in await beacons_collection.find().to_list(length=None)]
         logger.info(f"Access GET: ../beacons, FROM: {request.client.host}, STATUS: 200")
-        return {"status": "success", "content": beacons}
+        return beacons
     except Exception as e:
         logger.error(f"Access GET: ../beacons, FROM: {request.client.host}, STATUS: 500, ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -157,7 +151,7 @@ async def get_beacon(beacon_id: str, request: Request):
         if not beacon:
             raise HTTPException(status_code=404, detail="Beacon not found")
         logger.info(f"Access GET: ../beacon, FROM: {request.client.host}, STATUS: 200, DETAIL: {beacon_id}")
-        return {"status": "success", "content": serialize_mongo_document(beacon)}
+        return serialize_mongo_document(beacon)
     except HTTPException as e:
         logger.error(f"Access GET: ../beacon, FROM: {request.client.host}, STATUS: {e.status_code}")
         raise e
@@ -179,7 +173,7 @@ async def create_beacon(beacon: schemas.Beacon, request: Request):
         created_beacon["_id"] = str(result.inserted_id)
 
         logger.info(f"Access POST: ../beacon, FROM: {request.client.host}, STATUS: 201, DETAIL: {result.inserted_id}")
-        return {"status": "success", "content": created_beacon}
+        return created_beacon
     
     except HTTPException as e:
         logger.error(f"Access POST: ../beacon, FROM: {request.client.host}, STATUS: {e.status_code}, ERROR: {e.detail}")
@@ -202,7 +196,7 @@ async def update_beacon(beacon_id: str, beacon: schemas.Beacon, request: Request
 
         logger.info(f"Access PUT: ../beacon, FROM: {request.client.host}, STATUS: 200, DETAIL: {beacon_id}")
         
-        return {"status": "success", "content": updated_beacon}
+        return updated_beacon
     
     except HTTPException as e:
         logger.error(f"Access PUT: ../beacon, FROM: {request.client.host}, STATUS: {e.status_code}")
@@ -218,7 +212,7 @@ async def delete_beacon(beacon_id: str, request: Request):
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Beacon not found")
         logger.info(f"Access DELETE: ../beacon, FROM: {request.client.host}, STATUS: 200, DETAIL: {beacon_id}")
-        return {"status": "success", "message": "Beacon deleted"}
+        return beacon_id
     except HTTPException as e:
         logger.error(f"Access DELETE: ../beacon, FROM: {request.client.host}, STATUS: {e.status_code}")
         raise e

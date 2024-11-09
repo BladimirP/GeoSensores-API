@@ -13,7 +13,7 @@ services:
       - ./app/logs:/app/logs # Mapea los logs al host
 
   mongodb:
-    image: mongo:latest
+    image: mongo:4.4
     container_name: mongo-container
     ports:
       - "27018:27017"
