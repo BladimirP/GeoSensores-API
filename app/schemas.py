@@ -20,6 +20,15 @@ class User(BaseModel):
     language: str
     isEnable: bool
 
+class Recovery(BaseModel):
+    email: str
+    password: str
+    code: str
+
+class Pass(BaseModel):
+    email: str
+    password: str
+
 #__________ Loggs __________
 
 class FechaHora(BaseModel):
